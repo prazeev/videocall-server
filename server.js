@@ -29,19 +29,19 @@ io.on('connection', function(socket){
           apiKey: apiKey,
           sessionId: sessionId,
           token: opentok.generateToken(sessionId),
-          from: msg.from,
-          to: msg.to
+          from: data.from,
+          to: data.to
         }
-        io.emit(`s-token-${msg.from}`,callerData);
+        io.emit(`s-token-${data.from.id}`,callerData);
         caleeToken = opentok.generateToken(sessionId);
         var receiverData = {
-          'from':msg.from,
-          'to':msg.to,
+          'from':data.from,
+          'to':data.to,
           'apiKey':apiKey,
           'sessionId':sessionId,
           'token':caleeToken
         };
-        io.emit(`s-userCalling-${msg.to}`,receiverData)
+        io.emit(`s-userCalling-${data.to}`,receiverData)
       });
   })
 
