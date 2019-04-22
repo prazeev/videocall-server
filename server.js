@@ -11,16 +11,16 @@ const port = process.env.PORT || 3000;
 io.on('connection', function(socket){
   socket.on('initiate-call',function(msg){
     console.log(msg);
-      busyUsers.push(msg.from.email);
-      if(busyUsers.indexOf(msg.to.email)!=-1){
-        busyUsers.push(msg.to.email);
-      }
-      if(busyUsers.indexOf(msg.to.email)!= -1 ){
-        socket.emit(`c-userBusy-${msg.from.id}`);
-        delete busyUsers[busyUsers.indexOf(msg.to.email)];
-        delete busyUsers[busyUsers.indexOf(msg.from.email)];
-        return false;
-      }
+      // busyUsers.push(msg.from.email);
+      // if(busyUsers.indexOf(msg.to.email)!=-1){
+      //   busyUsers.push(msg.to.email);
+      // }
+      // if(busyUsers.indexOf(msg.to.email)!= -1 ){
+      //   socket.emit(`c-userBusy-${msg.from.id}`);
+      //   delete busyUsers[busyUsers.indexOf(msg.to.email)];
+      //   delete busyUsers[busyUsers.indexOf(msg.from.email)];
+      //   return false;
+      // }
       opentok.createSession(async function(err, session) {
         if (err) socket.emit('error',"Cannot generate token");
         sessionId = session.sessionId;
@@ -40,7 +40,7 @@ io.on('connection', function(socket){
           'sessionId':sessionId,
           'token':caleeToken
         };
-        io.emit(`s-userCalling-${msg.to.id}`,receiverData)
+        io.emit(`s-userCalling-${msg.to}`,receiverData)
       });
   })
 
@@ -71,7 +71,7 @@ io.on('connection', function(socket){
     delete busyUsers[busyUsers.indexOf(data.from.email)];
     io.emit(`s-callRejected-${data.from.id}`,data);
   })
-  
+
 });
 
 app.get('/',function(req,res){
