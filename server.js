@@ -34,7 +34,7 @@ io.on('connection', function(socket){
           to: data.to
         }
 
-        io.emit(`s-token-${data.id}`,callerData);
+        io.emit(`s-token-${data.from.id}`,callerData);
 
         caleeToken = opentok.generateToken(sessionId);
 
