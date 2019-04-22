@@ -11,6 +11,7 @@ const port = process.env.PORT || 3000;
 
 
 io.on('connection', function(socket){
+  console.log(socket.id);
   socket.on('initiate-call',function(data){
       // busyUsers.push(msg.from);
       // if(busyUsers.indexOf(msg.to)!=-1){
