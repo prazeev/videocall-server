@@ -8,20 +8,21 @@ var opentok = new OpenTok(apiKey,apiSecret);
 var busyUsers = [];
 const port = process.env.PORT || 3000;
 
+
+
 io.on('connection', function(socket){
-  socket.on('initiate-call',function(msg){
-    console.log(msg);
-      // busyUsers.push(msg.from.email);
-      // if(busyUsers.indexOf(msg.to.email)!=-1){
-      //   busyUsers.push(msg.to.email);
+  socket.on('initiate-call',function(data){
+      // busyUsers.push(msg.from);
+      // if(busyUsers.indexOf(msg.to)!=-1){
+      //   busyUsers.push(msg.to);
       // }
-      // if(busyUsers.indexOf(msg.to.email)!= -1 ){
+      // if(busyUsers.indexOf(msg.to) != -1 ){
       //   socket.emit(`c-userBusy-${msg.from.id}`);
-      //   delete busyUsers[busyUsers.indexOf(msg.to.email)];
-      //   delete busyUsers[busyUsers.indexOf(msg.from.email)];
+      //   delete busyUsers[busyUsers.indexOf(msg.to)];
+      //   delete busyUsers[busyUsers.indexOf(msg.from)];
       //   return false;
       // }
-      opentok.createSession(async function(err, session) {
+      opentok.createSession(function(err, session) {
         if (err) socket.emit('error',"Cannot generate token");
         sessionId = session.sessionId;
         var callerData = {
@@ -31,7 +32,7 @@ io.on('connection', function(socket){
           from: msg.from,
           to: msg.to
         }
-        io.emit(`s-token-${msg.from.id}`,callerData);
+        io.emit(`s-token-${msg.from}`,callerData);
         caleeToken = opentok.generateToken(sessionId);
         var receiverData = {
           'from':msg.from,
@@ -45,8 +46,8 @@ io.on('connection', function(socket){
   })
 
   socket.on('endCall',(data)=>{
-    delete busyUsers[busyUsers.indexOf(data.to.email)];
-    delete busyUsers[busyUsers.indexOf(data.from.email)];
+    delete busyUsers[busyUsers.indexOf(data.to)];
+    delete busyUsers[busyUsers.indexOf(data.to)];
     io.emit(`s-endCall-${data.to.id}`);
     io.emit(`s-endCall-${data.from.id}`);
   })
@@ -55,20 +56,20 @@ io.on('connection', function(socket){
   })
 
   socket.on('r-callAccepted',(data)=>{
-    busyUsers.push(data.to.email);
-    busyUsers.push(data.from.email);
+    busyUsers.push(data.to);
+    busyUsers.push(data.from);
     io.emit(`s-callAccepted-${data.from.id}`);
   })
 
   socket.on('c-cancelCall',(data)=>{
-    delete busyUsers[busyUsers.indexOf(data.to.email)];
-    delete busyUsers[busyUsers.indexOf(data.from.email)];
+    delete busyUsers[busyUsers.indexOf(data.to)];
+    delete busyUsers[busyUsers.indexOf(data.from)];
     io.emit(`s-callCancel-${data.to.id}`,data);
   })
 
   socket.on('r-callRejected',(data)=>{
-    delete busyUsers[busyUsers.indexOf(data.to.email)];
-    delete busyUsers[busyUsers.indexOf(data.from.email)];
+    delete busyUsers[busyUsers.indexOf(data.to)];
+    delete busyUsers[busyUsers.indexOf(data.from)];
     io.emit(`s-callRejected-${data.from.id}`,data);
   })
 
