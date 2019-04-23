@@ -11,18 +11,23 @@ const port = process.env.PORT || 3000;
 
 
 io.on('connection', function(socket){
-  console.log(socket.id);
   socket.on('initiate-call',function(data){
-      // busyUsers.push(msg.from);
-      // if(busyUsers.indexOf(msg.to)!=-1){
-      //   busyUsers.push(msg.to);
+    console.log(data);
+      // busyUsers.push(data.from);
+      // if(busyUsers.indexOf(data.to)!=-1){
+      //   busyUsers.push(data.to);
       // }
-      // if(busyUsers.indexOf(msg.to) != -1 ){
-      //   socket.emit(`c-userBusy-${msg.id}`);
-      //   delete busyUsers[busyUsers.indexOf(msg.to)];
-      //   delete busyUsers[busyUsers.indexOf(msg.from)];
+      // if(busyUsers.indexOf(data.to) != -1 ){
+      //   socket.emit(`c-userBusy-${data.id}`);
+      //   delete busyUsers[busyUsers.indexOf(data.to)];
+      //   delete busyUsers[busyUsers.indexOf(data.from)];
       //   return false;
       // }
+
+      //create a room
+
+      // put Caller and Receiver on the same room
+
       opentok.createSession(function(err, session) {
         if (err) socket.emit( 'error' , "Cannot generate token" );
         sessionId = session.sessionId;
@@ -31,8 +36,6 @@ io.on('connection', function(socket){
           apiKey: apiKey,
           sessionId: sessionId,
           token: opentok.generateToken(sessionId),
-          from: data.from,
-          to: data.to
         }
 
         io.emit(`s-token-${data.from.id}`,callerData);
@@ -53,7 +56,7 @@ io.on('connection', function(socket){
   })
 
   socket.on('endCall',(data)=>{
-    delete busyUsers[busyUsers.indexOf(data.to)];
+    delete busyUsers[busyUsers.indexOf(data.from)];
     delete busyUsers[busyUsers.indexOf(data.to)];
     io.emit(`s-endCall-${data.to}`);
     io.emit(`s-endCall-${data.from}`);
@@ -65,7 +68,7 @@ io.on('connection', function(socket){
   socket.on('r-callAccepted',(data)=>{
     busyUsers.push(data.to);
     busyUsers.push(data.from);
-    io.emit(`s-callAccepted-${data.id}`);
+    io.emit(`s-callAccepted-${data.from}`);
   })
 
   socket.on('c-cancelCall',(data)=>{
@@ -77,9 +80,8 @@ io.on('connection', function(socket){
   socket.on('r-callRejected',(data)=>{
     delete busyUsers[busyUsers.indexOf(data.to)];
     delete busyUsers[busyUsers.indexOf(data.from)];
-    io.emit(`s-callRejected-${data.id}`,data);
+    io.emit(`s-callRejected-${data.from}`,data);
   })
-
 });
 
 app.get('/',function(req,res){
