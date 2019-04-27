@@ -179,7 +179,6 @@ io.on('connection', function (socket) {
     let userTo = data.to;
     let userFrom = users[socket.id].id;
     let message = data.text.trim();
-    let profilePicture = data.profilePicture;
     let messageTime = new Date().getTime();
     if(message.length > 0) {
       if(isOnline(userTo)) {
