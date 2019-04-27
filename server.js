@@ -73,7 +73,9 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
 }
 
 function getUserMessages(from,to) {
-  return messages
+  return messages.filter(message => {
+    return message.from == from || message.to == to
+  })
 }
 
 function sendNotification(from, to, message) {
