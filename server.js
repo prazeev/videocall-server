@@ -78,6 +78,7 @@ io.on('connection', function (socket) {
   })
   socket.on('initiate-call', async function (data) {
     // eslint-disable-next-line eqeqeq
+    console.log(users)
     let fromId = data.from
     let toId = data.to
     let callerSocketIds = getSocketIdsFromUserId(fromId)
