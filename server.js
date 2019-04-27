@@ -29,7 +29,9 @@ function getSocketIdsFromSocketId (socketId, message) {
   }
   return socketIds
 }
+function checkUserAndUpdate(userId) {
 
+}
 function getSocketIdsFromUserId (userId) {
   let socketIds = []
   Object.entries(users).map((user) => {
@@ -65,6 +67,8 @@ function isOnline (userId) {
 }
 
 function emitEvent (io, socketIds, eventName, eventData = null) {
+  console.log(eventName)
+  console.log(socketIds)
   socketIds.forEach((socketId) => {
     io.to(`${socketId}`).emit(`${eventName}`, eventData)
   })
@@ -75,8 +79,9 @@ io.on('connection', function (socket) {
     users[socket.id] = { id: data }
   })
   socket.on('initiate-call', async function (data) {
+    console.log(data)
     // eslint-disable-next-line eqeqeq
-    console.log(users)
+    // console.log(users)
     let fromId = data.from
     let toId = data.to
     let callerSocketIds = getSocketIdsFromUserId(fromId)
