@@ -207,7 +207,7 @@ io.on('connection', function (socket) {
 })
 socket.on('getChat', (data) => {
   let chatData = getUserMessages(data.from, data.to);
-  emitEvent(io, [socket.id], "chatData", chatData);
+  emitEvent(io, [socket.id], "getChat", chatData);
 })
 
 app.get('/', function (req, res) {
