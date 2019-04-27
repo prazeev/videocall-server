@@ -67,21 +67,25 @@ function isOnline (userId) {
 }
 
 function emitEvent (io, socketIds, eventName, eventData = null) {
-  console.log(eventName)
-  console.log(socketIds)
   socketIds.forEach((socketId) => {
     io.to(`${socketId}`).emit(`${eventName}`, eventData)
   })
 }
+
+function sendNotification(from, to, message) {
+
+}
+
+function saveData(from, to, message) {
+
+}
+
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
     users[socket.id] = { id: data }
   })
   socket.on('initiate-call', async function (data) {
-    console.log(data)
-    // eslint-disable-next-line eqeqeq
-    // console.log(users)
     let fromId = data.from
     let toId = data.to
     let callerSocketIds = getSocketIdsFromUserId(fromId)
@@ -161,6 +165,30 @@ io.on('connection', function (socket) {
     let socketIds = getSocketIdsFromSocketId(data)
     emitEvent(io, socketIds, 'endCall')
   })
+
+
+
+
+  //Razeev
+  socket.on('sendChat', (data) => {
+    let userTo = data.to;
+    let userFrom = users[socket.id].id;
+    let message = data.text.trim();
+    if(message.length > 0) {
+      if(isOnline(userTo)) {
+        let receiverUsers = getSocketIdsFromUserId(userTo);
+        let emitingData = {
+          from: userFrom,
+          to: userTo,
+          message: message
+        }
+        emitEvent(io, receiverUsers,"receiveChat",emitingData)
+        saveData(userFrom,userTo,message)
+      } else {
+        sendNotification(userFrom, userTo, message)
+      }
+    }
+  });
 })
 
 app.get('/', function (req, res) {
@@ -170,3 +198,5 @@ app.get('/', function (req, res) {
 http.listen(port, function () {
   console.log(`Listening on ${port}`)
 })
+
+
