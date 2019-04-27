@@ -191,10 +191,18 @@ io.on('connection', function (socket) {
           messageTime: messageTime,
           profilePicture: profilePicture
         }
-        users.push(emitingData);
+        messages.push(emitingData);
         emitEvent(io, receiverUsers,"receiveChat",emitingData)
         saveData(userFrom,userTo,message)
       } else {
+        let notificationData = {
+          from: userFrom,
+          to: userTo,
+          message: message,
+          messageTime: messageTime,
+          profilePicture: profilePicture
+        }
+        messages.push(notificationData);
         sendNotification(userFrom, userTo, message)
       }
     }
