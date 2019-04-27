@@ -189,7 +189,6 @@ io.on('connection', function (socket) {
           to: userTo,
           message: message,
           messageTime: messageTime,
-          profilePicture: profilePicture
         }
         messages.push(emitingData);
         emitEvent(io, receiverUsers,"receiveChat",emitingData)
@@ -200,7 +199,6 @@ io.on('connection', function (socket) {
           to: userTo,
           message: message,
           messageTime: messageTime,
-          profilePicture: profilePicture
         }
         messages.push(notificationData);
         sendNotification(userFrom, userTo, message)
