@@ -1,92 +1,163 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var OpenTok = require('opentok');
-var apiKey = '46289812';
-var apiSecret = '72135dca7c071a29c6e38097ea0f1605a6018a06';
-var opentok = new OpenTok(apiKey,apiSecret);
-var busyUsers = [];
-const port = process.env.PORT || 3000;
+/* eslint-disable eqeqeq */
 
+var app = require('express')()
+var http = require('http').Server(app)
+var io = require('socket.io')(http)
+var OpenTok = require('opentok')
+var apiKey = '46289812'
+var apiSecret = '72135dca7c071a29c6e38097ea0f1605a6018a06'
+var opentok = new OpenTok(apiKey, apiSecret)
+var users = {}
+var busyUsers = []
 
+// [
+//   {id: '',socketId:'',isBusy:''}
+//   {socketId:}
+// ]
 
-io.on('connection', function(socket){
-  socket.on('initiate-call',function(data){
-    console.log(data);
-      // busyUsers.push(data.from);
-      // if(busyUsers.indexOf(data.to)!=-1){
-      //   busyUsers.push(data.to);
-      // }
-      // if(busyUsers.indexOf(data.to) != -1 ){
-      //   socket.emit(`c-userBusy-${data.id}`);
-      //   delete busyUsers[busyUsers.indexOf(data.to)];
-      //   delete busyUsers[busyUsers.indexOf(data.from)];
-      //   return false;
-      // }
+const port = process.env.PORT || 3000
 
-      //create a room
+// Fetchs all socket ids of user (A user may be connected in multiple sockets). Returns an array of SocketIds
+function getSocketIdsFromSocketId (socketId, message) {
+  let socketIds = []
+  if (users[socketId] && users[socketId].id) {
+    let userId = users[socketId].id
+    Object.entries(users).map((user) => {
+      if (userId == user[1].id) {
+        socketIds.push(user[0])
+      }
+    })
+  }
+  return socketIds
+}
 
-      // put Caller and Receiver on the same room
+function getSocketIdsFromUserId (userId) {
+  let socketIds = []
+  Object.entries(users).map((user) => {
+    if (user[1].id == userId) {
+      socketIds.push(user[0])
+    }
+  })
+  return socketIds
+}
 
-      opentok.createSession(function(err, session) {
-        if (err) socket.emit( 'error' , "Cannot generate token" );
-        sessionId = session.sessionId;
+function removeSocket (socketId) {
+  delete users[socketId]
+}
+function markAsBusy (userId) {
+  if (busyUsers.indexOf(userId) != -1) {
+    busyUsers.push(userId)
+  }
+}
 
-        var callerData = {
-          apiKey: apiKey,
-          sessionId: sessionId,
-          token: opentok.generateToken(sessionId),
-        }
+function removeFromBusy (userId) {
+  busyUsers.splice(busyUsers.indexOf(userId), 1)
+}
 
-        io.emit(`s-token-${data.from.id}`,callerData);
+function isBusy (userId) {
+  return busyUsers.indexOf(userId) >= 0
+}
 
-        caleeToken = opentok.generateToken(sessionId);
+function isOnline (userId) {
+  let isOnline = Object.values(users).filter((user) => {
+    return user.id == userId
+  }).length
+  return isOnline > 0
+}
+function emitEvent (io, socketIds, eventName, eventData = null) {
+  socketIds.forEach((socketId) => {
+    io.to(`${socketId}`).emit(`${eventName}`, eventData)
+  })
+}
+io.on('connection', function (socket) {
+  socket.on('user connected', (data) => {
+    console.log(data)
+    users[socket.id] = { id: data }
+  })
+  socket.on('initiate-call', async function (data) {
+    // eslint-disable-next-line eqeqeq
+    let fromId = data.from
+    let toId = data.to
+    let callerSocketIds = getSocketIdsFromUserId(fromId)
+    markAsBusy(fromId)
+    if (isBusy(toId)) {
+      removeFromBusy(fromId)
+      emitEvent(io, callerSocketIds, 'user busy')
+      return false
+    }
+    // eslint-disable-next-line eqeqeq
+    if (!isOnline(toId)) {
+      removeFromBusy(fromId)
+      emitEvent(io, callerSocketIds, 'user offline')
+      return false
+    }
+    let receiverSocketIds = getSocketIdsFromUserId(data.to)
+    // create a room
 
-        var receiverData = {
-          'from':data.from,
-          'to':data.to,
-          'apiKey':apiKey,
-          'sessionId':sessionId,
-          'token':caleeToken
-        };
+    // put Caller and Receiver on the same room
+    opentok.createSession(function (err, session) {
+      if (err) socket.emit('error', 'Cannot generate token')
+      let sessionId = session.sessionId
 
-        io.emit(`s-userCalling-${data.to}`,receiverData)
+      var callerData = {
+        apiKey: apiKey,
+        sessionId: sessionId,
+        token: opentok.generateToken(sessionId)
+      }
+      emitEvent(io, callerSocketIds, 's-apiTokens', callerData)
 
-      });
+      let receiverToken = opentok.generateToken(sessionId)
+      var receiverData = {
+        'apiKey': apiKey,
+        'sessionId': sessionId,
+        'token': receiverToken,
+        'callFrom': socket.id
+      }
+      // emitEvent(io, receiverSocketIds, 's-apiTokens', receiverData)
+      emitEvent(io, receiverSocketIds, 's-userCalling', receiverData)
+    })
   })
 
-  socket.on('endCall',(data)=>{
-    delete busyUsers[busyUsers.indexOf(data.from)];
-    delete busyUsers[busyUsers.indexOf(data.to)];
-    io.emit(`s-endCall-${data.to}`);
-    io.emit(`s-endCall-${data.from}`);
+  socket.on('disconnect', function () {
+    if (users[socket.id]) {
+      removeFromBusy(users[socket.id].id)
+      removeSocket(socket.id)
+    }
   })
-  socket.on('disconnect',function(){
-      console.log('user disconnected');
+  socket.on('r-userInactive', (data) => {
+    if (data.socketId) {
+      let socketIds = getSocketIdsFromSocketId(data.socketId)
+      emitEvent(io, socketIds, 's-userInactive', data)
+    }
   })
-
-  socket.on('r-callAccepted',(data)=>{
-    busyUsers.push(data.to);
-    busyUsers.push(data.from);
-    io.emit(`s-callAccepted-${data.from}`);
-  })
-
-  socket.on('c-cancelCall',(data)=>{
-    delete busyUsers[busyUsers.indexOf(data.to)];
-    delete busyUsers[busyUsers.indexOf(data.from)];
-    io.emit(`s-callCancel-${data.to}`,data);
+  socket.on('r-callAccepted', (data) => {
+    markAsBusy(users[data])
+    markAsBusy(users[socket.id].id)
+    let socketIds = getSocketIdsFromSocketId(data)
+    emitEvent(io, socketIds, 's-callAccepted')
   })
 
-  socket.on('r-callRejected',(data)=>{
-    delete busyUsers[busyUsers.indexOf(data.to)];
-    delete busyUsers[busyUsers.indexOf(data.from)];
-    io.emit(`s-callRejected-${data.from}`,data);
+  socket.on('c-cancelCall', (data) => {
+    let socketIds = getSocketIdsFromUserId(data.to)
+    emitEvent(io, socketIds, 's-callCancel')
+    removeFromBusy(data.from)
+    removeFromBusy(data.to)
   })
-});
 
-app.get('/',function(req,res){
-  res.send('hello world');
+  socket.on('r-callRejected', (data) => {
+    let socketIds = getSocketIdsFromSocketId(data)
+    emitEvent(io, socketIds, 's-callRejected')
+  })
+
+  socket.on('endCall', (data) => {
+    removeFromBusy(users[socket.id].id)
+  })
 })
-http.listen(port, function(){
-  console.log(`Listening on ${port}`);
-});
+
+app.get('/', function (req, res) {
+  res.send('hello world')
+})
+
+http.listen(port, function () {
+  console.log(`Listening on ${port}`)
+})
