@@ -157,6 +157,9 @@ io.on('connection', function (socket) {
 
   socket.on('endCall', (data) => {
     removeFromBusy(users[socket.id].id)
+    // io.to(`${socket}`)
+    let socketIds = getSocketIdsFromSocketId(data)
+    emitEvent(io, socketIds, 'endCall')
   })
 })
 
