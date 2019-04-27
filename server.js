@@ -72,6 +72,12 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
   })
 }
 
+function getUserMessages(from,to) {
+  return messages.filter(message => {
+    return message.from == from || message.to == to
+  })
+}
+
 function sendNotification(from, to, message) {
 
 }
@@ -79,7 +85,7 @@ function sendNotification(from, to, message) {
 function saveData(from, to, message) {
 
 }
-
+var messages = [];
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
@@ -174,14 +180,19 @@ io.on('connection', function (socket) {
     let userTo = data.to;
     let userFrom = users[socket.id].id;
     let message = data.text.trim();
+    let profilePicture = data.profilePicture;
+    let messageTime = new Date().getTime();
     if(message.length > 0) {
       if(isOnline(userTo)) {
         let receiverUsers = getSocketIdsFromUserId(userTo);
         let emitingData = {
           from: userFrom,
           to: userTo,
-          message: message
+          message: message,
+          messageTime: messageTime,
+          profilePicture: profilePicture
         }
+        users.push(emitingData);
         emitEvent(io, receiverUsers,"receiveChat",emitingData)
         saveData(userFrom,userTo,message)
       } else {
@@ -189,6 +200,10 @@ io.on('connection', function (socket) {
       }
     }
   });
+})
+socket.on('getChat', (data) => {
+  let chatData = getUserMessages(data.from, data.to);
+  emitEvent(io, [socket.id], "chatData", chatData);
 })
 
 app.get('/', function (req, res) {
