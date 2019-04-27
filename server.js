@@ -11,8 +11,7 @@ var users = {}
 var busyUsers = []
 
 // [
-//   {id: '',socketId:'',isBusy:''}
-//   {socketId:}
+//   socketId:user
 // ]
 
 const port = process.env.PORT || 3000
@@ -64,14 +63,17 @@ function isOnline (userId) {
   }).length
   return isOnline > 0
 }
+
 function emitEvent (io, socketIds, eventName, eventData = null) {
+  console.log(socketIds)
+  console.log(eventName)
   socketIds.forEach((socketId) => {
     io.to(`${socketId}`).emit(`${eventName}`, eventData)
   })
 }
+
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
-    console.log(data)
     users[socket.id] = { id: data }
   })
   socket.on('initiate-call', async function (data) {
