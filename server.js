@@ -65,8 +65,6 @@ function isOnline (userId) {
 }
 
 function emitEvent (io, socketIds, eventName, eventData = null) {
-  console.log(socketIds)
-  console.log(eventName)
   socketIds.forEach((socketId) => {
     io.to(`${socketId}`).emit(`${eventName}`, eventData)
   })
