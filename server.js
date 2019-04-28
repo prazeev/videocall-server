@@ -94,7 +94,6 @@ io.on('connection', function (socket) {
     users[socket.id] = { id: data }
   })
   socket.on('initiate-call', async function (data) {
-    console.log(busyUsers)
     let fromId = data.from
     let toId = data.to
     // let callerSocketIds = getSocketIdsFromUserId(fromId)
@@ -124,7 +123,8 @@ io.on('connection', function (socket) {
       var callerData = {
         apiKey: apiKey,
         sessionId: sessionId,
-        token: opentok.generateToken(sessionId)
+        token: opentok.generateToken(sessionId),
+        socketId: socket.id
       }
       emitEvent(io, [socket.id], 's-apiTokens', callerData)
 
@@ -189,9 +189,7 @@ io.on('connection', function (socket) {
   })
 
   socket.on('endCall', (data) => {
-    console.log(data)
     removeFromBusy(users[socket.id].id)
-    removeFromBusy(users[data].id)
     let socketIds = getSocketIdsFromSocketId(data)
     emitEvent(io, socketIds, 'endCall')
   })
