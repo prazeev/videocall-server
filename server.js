@@ -184,7 +184,7 @@ io.on('connection', function (socket) {
       }
     })
     emitEvent(io, [socketId], 's-callRejected')
-    removeFromBusy(users[data].id)
+    removeFromBusy(users[socketId].id)
     removeFromBusy(users[socket.id].id)
   })
 
