@@ -213,7 +213,7 @@ io.on('connection', function (socket) {
   })
   socket.on('getChat', (data) => {
     let chatData = getUserMessages(data.from, data.to)
-    emitEvent(io, [socket.id], 'getChat', chatData)
+    emitEvent(io, [socket.id], 'getChat', data)
   })
 })
 
