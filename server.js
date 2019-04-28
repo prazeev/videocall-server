@@ -221,6 +221,7 @@ io.on('connection', function (socket) {
           messageTime: messageTime
         }
         messages.push(notificationData)
+        emitEvent(io, [socket.id], 'getChat', data)
         sendNotification(userFrom, userTo, message)
       }
     }
