@@ -204,7 +204,7 @@ io.on('connection', function (socket) {
   socket.on('sendChat', (data) => {
     var userTo = data.to
     var userFrom = users[socket.id].id
-    var message = data.text.trim()
+    var message = data.text
     var messageTime = new Date().getTime()
     if (message.length > 0) {
       if (isOnline(userTo)) {
