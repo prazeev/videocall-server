@@ -196,7 +196,7 @@ io.on('connection', function (socket) {
         }
         messages.push(emitingData)
         emitEvent(io, receiverUsers, 'receiveChat', emitingData)
-        emitEvent(io, [socket.id], 'getChat', data)
+        emitEvent(io, [socket.id], 'getChat', emitingData)
         saveData(userFrom, userTo, emitingData)
       } else {
         let notificationData = {
