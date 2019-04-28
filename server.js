@@ -9,6 +9,7 @@ var apiSecret = '72135dca7c071a29c6e38097ea0f1605a6018a06'
 var opentok = new OpenTok(apiKey, apiSecret)
 var users = {}
 var busyUsers = []
+var messages = [];
 
 // [
 //   socketId:user
@@ -83,7 +84,6 @@ function sendNotification (from, to, message) {
 function saveData (from, to, message) {
 
 }
-var messages = []
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
