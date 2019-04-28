@@ -175,22 +175,22 @@ io.on('connection', function (socket) {
     removeFromBusy(data.to)
   })
 
-  socket.on('r-callRejected', (data) => {
-    let socketIds = getSocketIdsFromSocketId(data)
+  socket.on('r-callRejected', (socketId) => {
+    // let socketIds = getSocketIdsFromSocketId(data)
     let callerSocketIds = getSocketIdsFromSocketId(socket.id)
     callerSocketIds.forEach((socketId) => {
       if (socketId != socket.id) {
         emitEvent(io, [socketId], 's-anotherCallerRejectedCall')
       }
     })
-    emitEvent(io, socketIds, 's-callRejected')
+    emitEvent(io, [socketId], 's-callRejected')
     removeFromBusy(users[data].id)
     removeFromBusy(users[socket.id].id)
   })
 
   socket.on('endCall', (data) => {
     removeFromBusy(users[socket.id].id)
-    removeFromBusy(users[socket.id].id)
+    removeFromBusy(users[data].id)
     let socketIds = getSocketIdsFromSocketId(data)
     emitEvent(io, socketIds, 'endCall')
   })
