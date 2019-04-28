@@ -171,43 +171,40 @@ io.on('connection', function (socket) {
     emitEvent(io, socketIds, 'endCall')
   })
 
-
-
-
-  //Razeev
+  // Razeev
   socket.on('sendChat', (data) => {
-    let userTo = data.to;
-    let userFrom = users[socket.id].id;
-    let message = data.text.trim();
-    let messageTime = new Date().getTime();
-    if(message.length > 0) {
-      if(isOnline(userTo)) {
-        let receiverUsers = getSocketIdsFromUserId(userTo);
+    let userTo = data.to
+    let userFrom = users[socket.id].id
+    let message = data.text.trim()
+    let messageTime = new Date().getTime()
+    if (message.length > 0) {
+      if (isOnline(userTo)) {
+        let receiverUsers = getSocketIdsFromUserId(userTo)
         let emitingData = {
           from: userFrom,
           to: userTo,
           message: message,
-          messageTime: messageTime,
+          messageTime: messageTime
         }
-        messages.push(emitingData);
-        emitEvent(io, receiverUsers,"receiveChat",emitingData)
-        saveData(userFrom,userTo,message)
+        messages.push(emitingData)
+        emitEvent(io, receiverUsers, 'receiveChat', emitingData)
+        saveData(userFrom, userTo, message)
       } else {
         let notificationData = {
           from: userFrom,
           to: userTo,
           message: message,
-          messageTime: messageTime,
+          messageTime: messageTime
         }
-        messages.push(notificationData);
+        messages.push(notificationData)
         sendNotification(userFrom, userTo, message)
       }
     }
-  });
-})
-socket.on('getChat', (data) => {
-  let chatData = getUserMessages(data.from, data.to);
-  emitEvent(io, [socket.id], "getChat", chatData);
+  })
+  socket.on('getChat', (data) => {
+    let chatData = getUserMessages(data.from, data.to)
+    emitEvent(io, [socket.id], 'getChat', chatData)
+  })
 })
 
 app.get('/', function (req, res) {
@@ -217,5 +214,4 @@ app.get('/', function (req, res) {
 http.listen(port, function () {
   console.log(`Listening on ${port}`)
 })
-
 
