@@ -186,15 +186,13 @@ io.on('connection', function (socket) {
     let userTo = data.to
     let userFrom = users[socket.id].id
     let message = data.text.trim()
-    let messageTime = new Date().getTime()
     if (message.length > 0) {
       if (isOnline(userTo)) {
         let receiverUsers = getSocketIdsFromUserId(userTo)
         let emitingData = {
           from: userFrom,
           to: userTo,
-          message: message,
-          messageTime: messageTime
+          message: message
         }
         messages.push(emitingData)
         emitEvent(io, receiverUsers, 'receiveChat', emitingData)
