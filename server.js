@@ -202,14 +202,14 @@ io.on('connection', function (socket) {
 
   // Razeev
   socket.on('sendChat', (data) => {
-    let userTo = data.to
-    let userFrom = users[socket.id].id
-    let message = data.text.trim()
-    let messageTime = new Date().getTime()
+    var userTo = data.to
+    var userFrom = users[socket.id].id
+    var message = data.text.trim()
+    var messageTime = new Date().getTime()
     if (message.length > 0) {
       if (isOnline(userTo)) {
-        let receiverUsers = getSocketIdsFromUserId(userTo)
-        let emitingData = {
+        var receiverUsers = getSocketIdsFromUserId(userTo)
+        var emitingData = {
           from: userFrom,
           to: userTo,
           message: message,
@@ -220,7 +220,7 @@ io.on('connection', function (socket) {
         emitEvent(io, [socket.id], 'getChat', data)
         saveData(userFrom, userTo, emitingData)
       } else {
-        let notificationData = {
+        var notificationData = {
           from: userFrom,
           to: userTo,
           message: message,
@@ -233,7 +233,7 @@ io.on('connection', function (socket) {
     }
   })
   socket.on('getChat', (data) => {
-    let chatData = getUserMessages(data.from, data.to)
+    var chatData = getUserMessages(data.from, data.to)
     emitEvent(io, [socket.id], 'getChat', chatData)
   })
 })
