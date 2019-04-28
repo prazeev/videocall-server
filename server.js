@@ -205,6 +205,7 @@ io.on('connection', function (socket) {
     var userFrom = users[socket.id].id
     var message = data.text
     var messageTime = new Date().getTime()
+    var messageType = data.messageType == 3 ? 3 : 0
     if (message.length > 0) {
       if (isOnline(userTo)) {
         var receiverUsers = getSocketIdsFromUserId(userTo)
@@ -212,21 +213,21 @@ io.on('connection', function (socket) {
           from: userFrom,
           to: userTo,
           message: message,
-          messageTime: messageTime
+          messageTime: messageTime,
+          messageType: messageType
         }
         messages.push(emitingData)
         emitEvent(io, receiverUsers, 'receiveChat', emitingData)
-        emitEvent(io, [socket.id], 'getChat', data)
         saveData(userFrom, userTo, emitingData)
       } else {
         var notificationData = {
           from: userFrom,
           to: userTo,
           message: message,
-          messageTime: messageTime
+          messageTime: messageTime,
+          messageType: messageType
         }
         messages.push(notificationData)
-        emitEvent(io, [socket.id], 'getChat', data)
         sendNotification(userFrom, userTo, message)
       }
     }
