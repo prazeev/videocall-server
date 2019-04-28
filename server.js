@@ -9,6 +9,7 @@ var apiSecret = '72135dca7c071a29c6e38097ea0f1605a6018a06'
 var opentok = new OpenTok(apiKey, apiSecret)
 var users = {}
 var busyUsers = []
+var messages = []
 
 // [
 //   socketId:user
@@ -75,9 +76,14 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
 }
 
 function getUserMessages (from, to) {
-  return messages.filter(message => {
+  let data = messages.filter(message => {
     return message.from == from || message.to == to
   })
+  if (data.length > 0) {
+    return data
+  } else {
+    return []
+  }
 }
 
 function sendNotification (from, to, message) {
@@ -87,7 +93,6 @@ function sendNotification (from, to, message) {
 function saveData (from, to, message) {
 
 }
-var messages = []
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
@@ -196,15 +201,14 @@ io.on('connection', function (socket) {
 
   // Razeev
   socket.on('sendChat', (data) => {
-    console.log(data)
-    let userTo = data.to
-    let userFrom = users[socket.id].id
-    let message = data.text.trim()
-    let messageTime = new Date().getTime()
+    var userTo = data.to
+    var userFrom = users[socket.id].id
+    var message = data.text
+    var messageTime = new Date().getTime()
     if (message.length > 0) {
       if (isOnline(userTo)) {
-        let receiverUsers = getSocketIdsFromUserId(userTo)
-        let emitingData = {
+        var receiverUsers = getSocketIdsFromUserId(userTo)
+        var emitingData = {
           from: userFrom,
           to: userTo,
           message: message,
@@ -215,22 +219,22 @@ io.on('connection', function (socket) {
         emitEvent(io, [socket.id], 'getChat', data)
         saveData(userFrom, userTo, emitingData)
       } else {
-        let notificationData = {
+        var notificationData = {
           from: userFrom,
           to: userTo,
           message: message,
           messageTime: messageTime
         }
         messages.push(notificationData)
+        emitEvent(io, [socket.id], 'getChat', data)
         sendNotification(userFrom, userTo, message)
       }
     }
     console.log(messages)
   })
-  socket.on('getChat', (data) => {
-    console.log(data)
-    let chatData = getUserMessages(data.from, data.to)
-    emitEvent(io, [socket.id], 'getChat', chatData)
+  socket.on('requestGetChat', (data) => {
+    var chatData = getUserMessages(data.from, data.to)
+    emitEvent(io, [socket.id], 'responseGetChat', chatData)
   })
 })
 
