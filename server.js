@@ -196,6 +196,7 @@ io.on('connection', function (socket) {
 
   // Razeev
   socket.on('sendChat', (data) => {
+    console.log(data)
     let userTo = data.to
     let userFrom = users[socket.id].id
     let message = data.text.trim()
@@ -224,8 +225,10 @@ io.on('connection', function (socket) {
         sendNotification(userFrom, userTo, message)
       }
     }
+    console.log(messages)
   })
   socket.on('getChat', (data) => {
+    console.log(data)
     let chatData = getUserMessages(data.from, data.to)
     emitEvent(io, [socket.id], 'getChat', chatData)
   })
