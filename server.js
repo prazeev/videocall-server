@@ -76,13 +76,13 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
 }
 
 function getUserMessages (from, to) {
-  let data =  messages.filter(message => {
+  let data = messages.filter(message => {
     return message.from == from || message.to == to
   })
-  if(data.length > 0) {
+  if (data.length > 0) {
     return data
   } else {
-    return [];
+    return []
   }
 }
 
@@ -231,6 +231,7 @@ io.on('connection', function (socket) {
         sendNotification(userFrom, userTo, message)
       }
     }
+    console.log(messages)
   })
   socket.on('requestGetChat', (data) => {
     var chatData = getUserMessages(data.from, data.to)
