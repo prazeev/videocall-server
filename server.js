@@ -9,6 +9,7 @@ var apiSecret = '72135dca7c071a29c6e38097ea0f1605a6018a06'
 var opentok = new OpenTok(apiKey, apiSecret)
 var users = {}
 var busyUsers = []
+var onlineUsers = []
 var messages = []
 
 // [
@@ -94,9 +95,18 @@ function saveData (from, to, message) {
 
 }
 
+function getOnlineUsers () {
+  let onlineUsers = []
+  Object.values(users).forEach(user => onlineUsers.push(user.id))
+  return onlineUsers
+}
+
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
     users[socket.id] = { id: data }
+    // let onlineUsers = getOnlineUsers()
+    // socket.emit('s-onlineUsers', onlineUsers)
+    socket.broadcast.emit('user connected', { 'id': users[socket.id].id })
   })
   socket.on('initiate-call', async function (data) {
     let fromId = data.from
@@ -153,12 +163,12 @@ io.on('connection', function (socket) {
       removeSocket(socket.id)
     }
   })
-  socket.on('r-userInactive', (data) => {
-    if (data.socketId) {
-      removeFromBusy(users[data.socketId].id)
+  socket.on('r-userInactive', (socketId) => {
+    if (socketId) {
+      removeFromBusy(users[socketId].id)
       removeFromBusy(users[socket.id].id)
-      let socketIds = getSocketIdsFromSocketId(data.socketId)
-      emitEvent(io, socketIds, 's-userInactive', data)
+      // let socketIds = getSocketIdsFromSocketId(socketId)
+      emitEvent(io, [socketId], 's-userInactive', { userId: socketId })
     }
   })
   socket.on('r-callAccepted', (data) => {
