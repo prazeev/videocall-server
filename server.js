@@ -189,6 +189,7 @@ io.on('connection', function (socket) {
   })
 
   socket.on('endCall', (data) => {
+    console.log(data)
     removeFromBusy(users[socket.id].id)
     removeFromBusy(users[data].id)
     let socketIds = getSocketIdsFromSocketId(data)
