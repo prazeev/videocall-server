@@ -72,18 +72,18 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
   })
 }
 
-function getUserMessages(from,to) {
+function getUserMessages (from, to) {
   return messages
 }
 
-function sendNotification(from, to, message) {
+function sendNotification (from, to, message) {
 
 }
 
-function saveData(from, to, message) {
+function saveData (from, to, message) {
 
 }
-var messages = [];
+var messages = []
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
@@ -147,6 +147,12 @@ io.on('connection', function (socket) {
   socket.on('r-callAccepted', (data) => {
     markAsBusy(users[data])
     markAsBusy(users[socket.id].id)
+    let receiverSocketIds = getSocketIdsFromSocketId(socket.id)
+    receiverSocketIds.forEach((socketId) => {
+      if (socketId != socket.id) {
+        emitEvent(io, [socketId], 's-anotherDeviceReceivedCall')
+      }
+    })
     let socketIds = getSocketIdsFromSocketId(data)
     emitEvent(io, socketIds, 's-callAccepted')
   })
@@ -158,9 +164,15 @@ io.on('connection', function (socket) {
     removeFromBusy(data.to)
   })
 
-  socket.on('r-callRejected', (data) => {
-    let socketIds = getSocketIdsFromSocketId(data)
-    emitEvent(io, socketIds, 's-callRejected')
+  socket.on('r-callRejected', (socketId) => {
+    // let socketIds = getSocketIdsFromSocketId(data)
+    let callerSocketIds = getSocketIdsFromSocketId(socket.id)
+    callerSocketIds.forEach((socketId) => {
+      if (socketId != socket.id) {
+        emitEvent(io, [socketId], 's-anotherCallerRejectedCall')
+      }
+    })
+    emitEvent(io, [socketId], 's-callRejected')
   })
 
   socket.on('endCall', (data) => {
@@ -212,4 +224,3 @@ app.get('/', function (req, res) {
 http.listen(port, function () {
   console.log(`Listening on ${port}`)
 })
-
