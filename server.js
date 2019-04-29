@@ -163,8 +163,8 @@ io.on('connection', function (socket) {
   })
 
   socket.on('disconnect', function () {
-    socket.broadcast.emit('s-userOffline', users[socket.id].id)
     if (users[socket.id]) {
+      socket.broadcast.emit('s-userOffline', users[socket.id].id)
       removeFromBusy(users[socket.id].id)
       removeSocket(socket.id)
     }
