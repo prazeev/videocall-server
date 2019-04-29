@@ -30,9 +30,6 @@ function getSocketIdsFromSocketId (socketId, message) {
   }
   return socketIds
 }
-function checkUserAndUpdate(userId) {
-
-}
 function getSocketIdsFromUserId (userId) {
   let socketIds = []
   Object.entries(users).map((user) => {
@@ -125,9 +122,7 @@ io.on('connection', function (socket) {
       return false
     }
     let receiverSocketIds = getSocketIdsFromUserId(data.to)
-    // create a room
-    var userToken = ''
-    // put Caller and Receiver on the same room
+
     await opentok.createSession(async function (err, session) {
       if (err) {
         io.to(socket.id).emit('error', 'Cannot generate token')
