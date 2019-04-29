@@ -9,7 +9,6 @@ var apiSecret = '72135dca7c071a29c6e38097ea0f1605a6018a06'
 var opentok = new OpenTok(apiKey, apiSecret)
 var users = {}
 var busyUsers = []
-var onlineUsers = []
 var messages = []
 
 // [
@@ -97,48 +96,53 @@ function saveData (from, to, message) {
 
 function getOnlineUsers () {
   let onlineUsers = []
-  Object.values(users).forEach(user => onlineUsers.push(user.id))
+  Object.values(users).forEach((user) => onlineUsers.push(user.id))
   return onlineUsers
 }
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
-    users[socket.id] = { id: data }
-    // let onlineUsers = getOnlineUsers()
-    // socket.emit('s-onlineUsers', onlineUsers)
-    socket.broadcast.emit('user connected', { 'id': users[socket.id].id })
+    users[socket.id] = { id: data.id, name: data.name }
+    socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
+    socket.broadcast.emit('s-userList', getOnlineUsers())
   })
   socket.on('initiate-call', async function (data) {
     let fromId = data.from
     let toId = data.to
-    // let callerSocketIds = getSocketIdsFromUserId(fromId)
-
     markAsBusy(fromId)
     if (isBusy(toId)) {
-      console.log('busy')
       removeFromBusy(fromId)
       emitEvent(io, [socket.id], 'user busy')
       return false
     }
     // eslint-disable-next-line eqeqeq
     if (!isOnline(toId)) {
-      console.log('not online')
       removeFromBusy(fromId)
       emitEvent(io, [socket.id], 'user offline')
       return false
     }
     let receiverSocketIds = getSocketIdsFromUserId(data.to)
     // create a room
-
+    var userToken = ''
     // put Caller and Receiver on the same room
-    opentok.createSession(function (err, session) {
-      if (err) socket.emit('error', 'Cannot generate token')
+    await opentok.createSession(async function (err, session) {
+      if (err) {
+        io.to(socket.id).emit('error', 'Cannot generate token')
+        return false
+      }
       let sessionId = session.sessionId
-
+      opentok.generateToken(sessionId, (err, token) => {
+        if (err) {
+          io.to(socket.id).emit('error')
+          return false
+        } else {
+          userToken = token
+        }
+      })
       var callerData = {
         apiKey: apiKey,
         sessionId: sessionId,
-        token: opentok.generateToken(sessionId),
+        token: userToken,
         socketId: socket.id
       }
       emitEvent(io, [socket.id], 's-apiTokens', callerData)
@@ -158,6 +162,7 @@ io.on('connection', function (socket) {
   })
 
   socket.on('disconnect', function () {
+    socket.broadcast.emit('s-userOffline', users[socket.id].id)
     if (users[socket.id]) {
       removeFromBusy(users[socket.id].id)
       removeSocket(socket.id)
@@ -167,8 +172,7 @@ io.on('connection', function (socket) {
     if (socketId) {
       removeFromBusy(users[socketId].id)
       removeFromBusy(users[socket.id].id)
-      // let socketIds = getSocketIdsFromSocketId(socketId)
-      emitEvent(io, [socketId], 's-userInactive', { userId: socketId })
+      emitEvent(io, [socketId], 's-userInactive', { userId: users[socket.id].id })
     }
   })
   socket.on('r-callAccepted', (data) => {
@@ -191,7 +195,6 @@ io.on('connection', function (socket) {
   })
 
   socket.on('r-callRejected', (socketId) => {
-    // let socketIds = getSocketIdsFromSocketId(data)
     let callerSocketIds = getSocketIdsFromSocketId(socket.id)
     callerSocketIds.forEach((socketId) => {
       if (socketId != socket.id) {
@@ -205,6 +208,9 @@ io.on('connection', function (socket) {
 
   socket.on('endCall', (data) => {
     removeFromBusy(users[socket.id].id)
+    if (data) {
+      removeFromBusy(data)
+    }
     let socketIds = getSocketIdsFromSocketId(data)
     emitEvent(io, socketIds, 'endCall')
   })
@@ -241,7 +247,6 @@ io.on('connection', function (socket) {
         sendNotification(userFrom, userTo, message)
       }
     }
-    console.log(messages)
   })
   socket.on('requestGetChat', (data) => {
     var chatData = getUserMessages(data.from, data.to)
