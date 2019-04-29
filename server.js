@@ -102,10 +102,12 @@ function getOnlineUsers () {
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
+    console.log('connected')
     users[socket.id] = { id: data.id, name: data.name }
     console.log(users)
     socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
-    socket.broadcast.emit('s-userList', getOnlineUsers())
+    io.to(socket.id).emit('s-userList', getOnlineUsers())
+    console.log(getOnlineUsers())
   })
   socket.on('initiate-call', async function (data) {
     let fromId = data.from
