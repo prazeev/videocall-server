@@ -103,7 +103,7 @@ function getOnlineUsers () {
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
     users[socket.id] = { id: data.id, name: data.name }
-    console.log(users[socket.id])
+    console.log(users)
     socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
     socket.broadcast.emit('s-userList', getOnlineUsers())
   })
@@ -132,27 +132,18 @@ io.on('connection', function (socket) {
         return false
       }
       let sessionId = session.sessionId
-      opentok.generateToken(sessionId, (err, token) => {
-        if (err) {
-          io.to(socket.id).emit('error')
-          return false
-        } else {
-          userToken = token
-        }
-      })
+      let token = opentok.generateToken(sessionId)
       var callerData = {
         apiKey: apiKey,
         sessionId: sessionId,
-        token: userToken,
+        token: token,
         socketId: socket.id
       }
       emitEvent(io, [socket.id], 's-apiTokens', callerData)
-
-      let receiverToken = opentok.generateToken(sessionId)
       var receiverData = {
         'apiKey': apiKey,
         'sessionId': sessionId,
-        'token': receiverToken,
+        'token': token,
         'callFrom': socket.id,
         'name': data.name
       }
