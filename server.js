@@ -103,6 +103,7 @@ function getOnlineUsers () {
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
     users[socket.id] = { id: data.id, name: data.name }
+    console.log(users[socket.id])
     socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
     socket.broadcast.emit('s-userList', getOnlineUsers())
   })
