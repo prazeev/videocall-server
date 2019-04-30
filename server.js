@@ -112,6 +112,10 @@ io.on('connection', function (socket) {
       emitEvent(io, [socket.id], 'user busy')
       return false
     }
+    if (isBusy(fromId)) {
+      emitEvent(io, [socket.id], 'Cannot call now..')
+      return false
+    }
     // eslint-disable-next-line eqeqeq
     if (!isOnline(toId)) {
       removeFromBusy(fromId)
