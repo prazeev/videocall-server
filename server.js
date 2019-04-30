@@ -50,6 +50,7 @@ function markAsBusy (userId) {
 }
 
 function removeFromBusy (userId) {
+  console.log('from busy' + userId)
   busyUsers.splice(busyUsers.indexOf(userId), 1)
 }
 
@@ -199,7 +200,7 @@ io.on('connection', function (socket) {
   socket.on('endCall', (data) => {
     removeFromBusy(users[socket.id].id)
     if (data) {
-      removeFromBusy(data)
+      removeFromBusy(users[data].id)
     }
     let socketIds = getSocketIdsFromSocketId(data)
     emitEvent(io, socketIds, 'endCall')
