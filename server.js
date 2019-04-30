@@ -106,14 +106,14 @@ io.on('connection', function (socket) {
   socket.on('initiate-call', async function (data) {
     let fromId = data.from
     let toId = data.to
+    if (isBusy(fromId)) {
+      emitEvent(io, [socket.id], 'user busy')
+      return false
+    }
     markAsBusy(fromId)
     if (isBusy(toId)) {
       removeFromBusy(fromId)
       emitEvent(io, [socket.id], 'user busy')
-      return false
-    }
-    if (isBusy(fromId)) {
-      emitEvent(io, [socket.id], 'Cannot call now..')
       return false
     }
     // eslint-disable-next-line eqeqeq
