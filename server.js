@@ -107,7 +107,7 @@ io.on('connection', function (socket) {
     let fromId = data.from
     let toId = data.to
     if (isBusy(fromId)) {
-      emitEvent(io, [socket.id], 'user busy')
+      emitEvent(io, [socket.id], 's-currentBusy')
       return false
     }
     markAsBusy(fromId)
