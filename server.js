@@ -209,7 +209,7 @@ io.on('connection', function (socket) {
   // Razeev
   socket.on('sendChat', (data) => {
     var userTo = data.to
-    var userFrom = users[socket.id].id
+    var userFrom = data.from
     var message = data.text
     var messageTime = new Date().getTime()
     var messageType = data.messageType == 3 ? 3 : 0
