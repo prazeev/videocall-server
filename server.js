@@ -30,6 +30,16 @@ function getSocketIdsFromSocketId (socketId, message) {
   }
   return socketIds
 }
+
+function socketExists (socketId) {
+  let user = Object.keys(users).map(function (sId) {
+    return sId == socketId
+  })
+  if (user.length > 0) {
+    return true
+  }
+  return false
+}
 function getSocketIdsFromUserId (userId) {
   let socketIds = []
   Object.entries(users).map((user) => {
@@ -128,6 +138,7 @@ io.on('connection', function (socket) {
 
     opentok.createSession(function (err, session) {
       if (err) {
+        removeFromBusy(fromId)
         io.to(socket.id).emit('error', 'Cannot generate token')
         return false
       }
@@ -161,8 +172,11 @@ io.on('connection', function (socket) {
     }
   })
   socket.on('r-userInactive', (socketId) => {
+    console.log(socketId)
     if (socketId) {
-      removeFromBusy(users[socketId].id)
+      if (socketExists(socketId)) {
+        removeFromBusy(users[socketId].id)
+      }
       removeFromBusy(users[socket.id].id)
       emitEvent(io, [socketId], 's-userInactive', { userId: users[socket.id].id })
     }
