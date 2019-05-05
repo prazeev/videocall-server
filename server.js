@@ -44,13 +44,14 @@ function removeSocket (socketId) {
   delete users[socketId]
 }
 function markAsBusy (userId) {
+  console.log('mark as busy' + userId)
   if (busyUsers.indexOf(userId) == -1) {
     busyUsers.push(userId)
   }
 }
 
 function removeFromBusy (userId) {
-  console.log('from busy' + userId)
+  console.log('remove from busy' + userId)
   busyUsers.splice(busyUsers.indexOf(userId), 1)
 }
 
