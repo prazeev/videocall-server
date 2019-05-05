@@ -265,7 +265,7 @@ io.on('connection', function (socket) {
   })
   socket.on('typingIndicatorSend', (data) => {
     data = getSocketIdsFromUserId(data)
-    emitEvent(io, [data], 'typingIndicatorGet', "Typing..")
+    emitEvent(io, data, 'typingIndicatorGet', "Typing..")
   })
 })
 
