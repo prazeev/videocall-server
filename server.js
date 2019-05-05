@@ -86,9 +86,12 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
 
 function getUserMessages (from, to) {
   var data = messages.filter((message) => {
-    return message.from == from || message.to == to
+    return (message.from == from && message.to == to) || (message.from == from && message.to == to)
   })
   if (data.length > 0) {
+    data.sort(function(a, b){
+      return a.messageTime > b.messageTime;
+    });
     return data
   } else {
     return []
