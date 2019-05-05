@@ -125,7 +125,7 @@ io.on('connection', function (socket) {
     }
     let receiverSocketIds = getSocketIdsFromUserId(data.to)
 
-    await opentok.createSession(async function (err, session) {
+    opentok.createSession(function (err, session) {
       if (err) {
         io.to(socket.id).emit('error', 'Cannot generate token')
         return false
@@ -198,6 +198,8 @@ io.on('connection', function (socket) {
   })
 
   socket.on('endCall', (data) => {
+    console.log('from inside endcall, received from ender' + data)
+    console.log('from inside endcall, socket id of user who ended' + users[socket.id].id)
     removeFromBusy(users[socket.id].id)
     if (data) {
       removeFromBusy(users[data].id)
