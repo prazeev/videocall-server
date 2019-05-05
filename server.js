@@ -263,6 +263,9 @@ io.on('connection', function (socket) {
     var chatData = getUserMessages(data.from, data.to)
     emitEvent(io, [socket.id], 'responseGetChat', chatData)
   })
+  socket.on('typingIndicatorSend', (data) => {
+    emitEvent(io, [data], 'typingIndicatorGet', "Typing..")
+  })
 })
 
 app.get('/', function (req, res) {
