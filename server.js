@@ -118,6 +118,9 @@ io.on('connection', function (socket) {
     socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
     io.to(socket.id).emit('s-userList', getOnlineUsers())
   })
+  socket.on('r-userStatus', (data) => {
+    emitEvent(io, [socket.id], 's-userStatus', isOnline(data))
+  })
   socket.on('initiate-call', async function (data) {
     let fromId = data.from
     let toId = data.to
