@@ -76,14 +76,50 @@ function isOnline (userId) {
   return isOnline > 0
 }
 
-function isOnlineList(userList) {
+function lastChatDate(from, to) {
+  var data = messages.filter((message) => {
+    return (message.from == from && message.to == to) || (message.from == to && message.to == from)
+  })
+  data = sort(data)
+  if(data > 0) {
+    return data[0].date
+  } else {
+    return "N"
+  }
+}
+
+var sort = function(array) {
+  var len = array.length;
+  if(len < 2) { 
+    return array;
+  }
+  var pivot = Math.ceil(len/2);
+  return merge(sort(array.slice(0,pivot)), sort(array.slice(pivot)));
+};
+
+var merge = function(left, right) {
+  var result = [];
+  while((left.length > 0) && (right.length > 0)) {
+    if(left[0].date > right[0]["obj"].date) {
+      result.push(left.shift());
+    }
+    else {
+      result.push(right.shift());
+    }
+  }
+
+  result = result.concat(left, right);
+  return result;
+};
+
+function isOnlineList(userList, user) {
   userList.forEach(function(user) {
     if(isOnline(user.id)) {
       user.isOnline = true
       user.lastOnline = ""
     } else {
       user.isOnline = false
-      user.lastOnline = "today"
+      user.lastOnline = lastChatDate(user.id, user)
     }
   })
   return userList
@@ -135,7 +171,7 @@ io.on('connection', function (socket) {
     emitEvent(io, [socket.id], 's-userStatus', isOnline(data))
   })
   socket.on("r-userOnlineList", (data) => {
-    var onlineList = isOnlineList(data)
+    var onlineList = isOnlineList(data, users[socket.id].id)
     emitEvent(io, [socket.id], 's-userOnlineList', onlineList)
   })
   socket.on('initiate-call', async function (data) {
