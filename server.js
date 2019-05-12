@@ -80,8 +80,10 @@ function isOnlineList(userList) {
   userList.forEach(function(user) {
     if(isOnline(user.id)) {
       user.isOnline = true
+      user.lastOnline = ""
     } else {
       user.isOnline = false
+      user.lastOnline = "today"
     }
   })
   return userList
