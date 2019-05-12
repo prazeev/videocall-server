@@ -15,7 +15,7 @@ var messages = []
 //   socketId:user
 // ]
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3001
 
 // Fetchs all socket ids of user (A user may be connected in multiple sockets). Returns an array of SocketIds
 function getSocketIdsFromSocketId (socketId, message) {
@@ -85,8 +85,10 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
 }
 
 function getUserMessages (from, to) {
+  console.log(from)
+  console.log(to)
   var data = messages.filter((message) => {
-    return message.from == from || message.to == to
+    return (message.from == from && message.to == to) || (message.from == to && message.to == from)
   })
   if (data.length > 0) {
     return data
@@ -174,7 +176,7 @@ io.on('connection', function (socket) {
   socket.on('r-userInactive', (socketId) => {
     console.log(socketId)
     if (socketId) {
-      if (socketExists(socketId)) {
+      if (socketExists(socketId) && users[socketId]) {
         removeFromBusy(users[socketId].id)
       }
       removeFromBusy(users[socket.id].id)
@@ -208,8 +210,10 @@ io.on('connection', function (socket) {
       }
     })
     emitEvent(io, [socketId], 's-callRejected')
-    removeFromBusy(users[socketId].id)
-    removeFromBusy(users[socket.id].id)
+    if (users[socketId]) {
+      removeFromBusy(users[socketId].id)
+      removeFromBusy(users[socket.id].id)
+    }
   })
 
   socket.on('endCall', (data) => {
@@ -257,6 +261,7 @@ io.on('connection', function (socket) {
     }
   })
   socket.on('requestGetChat', (data) => {
+    console.log(data)
     var chatData = getUserMessages(data.from, data.to)
     emitEvent(io, [socket.id], 'responseGetChat', chatData)
   })
