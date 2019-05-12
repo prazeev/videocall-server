@@ -112,14 +112,14 @@ var merge = function(left, right) {
   return result;
 };
 
-function isOnlineList(userList, user) {
+function isOnlineList(userList) {
   userList.forEach(function(user) {
     if(isOnline(user.id)) {
       user.isOnline = true
       user.lastOnline = ""
     } else {
       user.isOnline = false
-      user.lastOnline = lastChatDate(user.id, user)
+      user.lastOnline = ""
     }
   })
   return userList
@@ -171,7 +171,7 @@ io.on('connection', function (socket) {
     emitEvent(io, [socket.id], 's-userStatus', isOnline(data))
   })
   socket.on("r-userOnlineList", (data) => {
-    var onlineList = isOnlineList(data, users[socket.id].id)
+    var onlineList = isOnlineList(data)
     emitEvent(io, [socket.id], 's-userOnlineList', onlineList)
   })
   socket.on('initiate-call', async function (data) {
