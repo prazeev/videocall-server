@@ -77,15 +77,14 @@ function isOnline (userId) {
 }
 
 function isOnlineList(userList) {
-  var onlineList = []
   userList.forEach(function(user) {
-    if(isOnline(user)) {
-      onlineList.push(1)
+    if(isOnline(user.id)) {
+      user.isOnline = true
     } else {
-      onlineList.push(0)
+      user.isOnline = false
     }
   })
-  return onlineList
+  return userList
 }
 
 function emitEvent (io, socketIds, eventName, eventData = null) {
