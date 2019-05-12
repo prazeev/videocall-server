@@ -235,7 +235,7 @@ io.on('connection', function (socket) {
   socket.on('sendChat', (data) => {
     var userTo = data.to
     var userFrom = data.from
-    var message = data.text
+    var message = data.text.trim()
     var messageTime = new Date().getTime()
     var messageType = data.messageType == 3 ? 3 : 0
     if (message.length > 0) {
@@ -271,7 +271,7 @@ io.on('connection', function (socket) {
   })
   socket.on('typingIndicatorSend', (data) => {
     data = getSocketIdsFromUserId(data)
-    emitEvent(io, data, 'typingIndicatorGet', "Typing..")
+    emitEvent(io, data, 'typingIndicatorGet', 'Typing..')
   })
 })
 
