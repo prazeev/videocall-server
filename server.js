@@ -76,6 +76,14 @@ function isOnline (userId) {
   return isOnline > 0
 }
 
+function isOnlineList(userList) {
+  var onlineList = []
+  userList.forEach(function(user) {
+    onlineList.push(isOnline(user))
+  })
+  return onlineList
+}
+
 function emitEvent (io, socketIds, eventName, eventData = null) {
   console.log(eventName)
   console.log(socketIds)
@@ -120,6 +128,10 @@ io.on('connection', function (socket) {
   })
   socket.on('r-userStatus', (data) => {
     emitEvent(io, [socket.id], 's-userStatus', isOnline(data))
+  })
+  socket.on("r-userOnlineList", (data) => {
+    var onlineList = isOnlineList(data)
+    emitEvent(io, [socket.id], 's-userOnlineList', onlineList)
   })
   socket.on('initiate-call', async function (data) {
     let fromId = data.from
