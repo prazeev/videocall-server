@@ -130,7 +130,7 @@ io.on('connection', function (socket) {
     emitEvent(io, [socket.id], 's-userStatus', isOnline(data))
   })
   socket.on("r-userOnlineList", (data) => {
-    var onlineList = isOnlineList(data)
+    // var onlineList = isOnlineList(data)
     emitEvent(io, [socket.id], 's-userOnlineList', "Test")
   })
   socket.on('initiate-call', async function (data) {
