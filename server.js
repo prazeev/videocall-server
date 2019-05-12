@@ -85,12 +85,13 @@ function emitEvent (io, socketIds, eventName, eventData = null) {
 }
 
 function getUserMessages (from, to) {
-  console.log(from)
-  console.log(to)
   var data = messages.filter((message) => {
     return (message.from == from && message.to == to) || (message.from == to && message.to == from)
   })
   if (data.length > 0) {
+    data.sort(function (a, b) {
+      return a.messageTime > b.messageTime
+    })
     return data
   } else {
     return []
@@ -116,6 +117,9 @@ io.on('connection', function (socket) {
     users[socket.id] = { id: data.id, name: data.name }
     socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
     io.to(socket.id).emit('s-userList', getOnlineUsers())
+  })
+  socket.on('r-userStatus', (data) => {
+    emitEvent(io, [socket.id], 's-userStatus', isOnline(data))
   })
   socket.on('initiate-call', async function (data) {
     let fromId = data.from
@@ -264,6 +268,10 @@ io.on('connection', function (socket) {
     console.log(data)
     var chatData = getUserMessages(data.from, data.to)
     emitEvent(io, [socket.id], 'responseGetChat', chatData)
+  })
+  socket.on('typingIndicatorSend', (data) => {
+    data = getSocketIdsFromUserId(data)
+    emitEvent(io, data, 'typingIndicatorGet', "Typing..")
   })
 })
 
