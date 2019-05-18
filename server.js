@@ -15,7 +15,7 @@ var messages = []
 //   socketId:user
 // ]
 
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3002
 
 // Fetchs all socket ids of user (A user may be connected in multiple sockets). Returns an array of SocketIds
 function getSocketIdsFromSocketId (socketId, message) {
