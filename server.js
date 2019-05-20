@@ -152,7 +152,7 @@ function isOnlineList(userList) {
   userList.sort((x,y) => {
     var c = x.isOnline ? 1 : 0
     var d = y.isOnline ? 1 : 0
-    return Number(c) - Number(d)
+    return Number(d) - Number(c)
   })
   return userList
 }
