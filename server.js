@@ -10,12 +10,39 @@ var opentok = new OpenTok(apiKey, apiSecret)
 var users = {}
 var busyUsers = []
 var messages = []
+var unReadMessage = new Array()
 
 // [
 //   socketId:user
 // ]
 
 const port = process.env.PORT || 3001
+
+// insert new unread message count
+function insertUnreadCount(from, to, count) {
+  if(unReadMessage[from] === undefined) {
+    unReadMessage[from] = new Array()
+    unReadMessage[from][to] = Number(count)
+  } else if(unReadMessage[from][to] === undefined) {
+    unReadMessage[from][to] = Number(count)
+  } else {
+    unReadMessage[from][to] += Number(count)
+  }
+}
+
+function clearUnreadCount(of, to) {
+  delete unReadMessage[of][to]
+}
+
+function getUnReadCount(from, to) {
+  if(unReadMessage[from] === undefined) {
+    return 0
+  } else if(unReadMessage[from][to] === undefined) {
+    return 0
+  } else {
+    return unReadMessage[from][to]
+  }
+}
 
 // Fetchs all socket ids of user (A user may be connected in multiple sockets). Returns an array of SocketIds
 function getSocketIdsFromSocketId (socketId, message) {
@@ -121,6 +148,11 @@ function isOnlineList(userList) {
       user.isOnline = false
       user.lastOnline = ""
     }
+  })
+  userList.sort((x,y) => {
+    var c = x.isOnline ? 1 : 0
+    var d = y.isOnline ? 1 : 0
+    return Number(c) - Number(d)
   })
   return userList
 }
@@ -318,7 +350,6 @@ io.on('connection', function (socket) {
     }
   })
   socket.on('requestGetChat', (data) => {
-    console.log(data)
     var chatData = getUserMessages(data.from, data.to)
     emitEvent(io, [socket.id], 'responseGetChat', chatData)
   })
