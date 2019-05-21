@@ -337,7 +337,6 @@ io.on('connection', function (socket) {
         emitEvent(io, receiverUsers, 'receiveChat', emitingData)
         saveData(userFrom, userTo, emitingData)
       } else {
-        var receiverUsers = getSocketIdsFromUserId(userTo)
         var notificationData = {
           from: userFrom,
           to: userTo,
@@ -346,7 +345,6 @@ io.on('connection', function (socket) {
           messageType: messageType
         }
         messages.push(notificationData)
-        emitEvent(io, receiverUsers, 'receiveChat', emitingData)
         sendNotification(userFrom, userTo, message)
       }
     }
