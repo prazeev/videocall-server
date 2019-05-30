@@ -4,13 +4,13 @@ var app = require('express')()
 var http = require('http').Server(app)
 var io = require('socket.io')(http)
 var OpenTok = require('opentok')
-var apiKey = '46289812'
-var apiSecret = '72135dca7c071a29c6e38097ea0f1605a6018a06'
+var apiKey = '46337902'
+var apiSecret = '2d6130624d1956b34d0faa5946178dc7e28edd41'
 var opentok = new OpenTok(apiKey, apiSecret)
 var users = {}
 var busyUsers = []
 var messages = []
-var unReadMessage = new Array()
+var unReadMessage = []
 
 // [
 //   socketId:user
@@ -20,10 +20,10 @@ const port = process.env.PORT || 3001
 
 // insert new unread message count
 function insertUnreadCount(from, to, count) {
-  if(unReadMessage[from] === undefined) {
-    unReadMessage[from] = new Array()
+  if (unReadMessage[from] === undefined) {
+    unReadMessage[from] = []
     unReadMessage[from][to] = Number(count)
-  } else if(unReadMessage[from][to] === undefined) {
+  } else if (unReadMessage[from][to] === undefined) {
     unReadMessage[from][to] = Number(count)
   } else {
     unReadMessage[from][to] += Number(count)
@@ -35,9 +35,9 @@ function clearUnreadCount(of, to) {
 }
 
 function getUnReadCount(from, to) {
-  if(unReadMessage[from] === undefined) {
+  if (unReadMessage[from] === undefined) {
     return 0
-  } else if(unReadMessage[from][to] === undefined) {
+  } else if (unReadMessage[from][to] === undefined) {
     return 0
   } else {
     return unReadMessage[from][to]
