@@ -67,6 +67,7 @@ function socketExists (socketId) {
   }
   return false
 }
+
 function getSocketIdsFromUserId (userId) {
   let socketIds = []
   Object.entries(users).map((user) => {
@@ -80,15 +81,16 @@ function getSocketIdsFromUserId (userId) {
 function removeSocket (socketId) {
   delete users[socketId]
 }
-function markAsBusy (userId) {
-  console.log('mark as busy' + userId)
+
+function markAsBusy (userId, message = null) {
+  console.log('mark as busy' + userId + ' ' + message)
   if (busyUsers.indexOf(userId) == -1) {
     busyUsers.push(userId)
   }
 }
 
-function removeFromBusy (userId) {
-  console.log('remove from busy' + userId)
+function removeFromBusy (userId, message = null) {
+  console.log('remove from busy' + userId + ' ' + message)
   busyUsers.splice(busyUsers.indexOf(userId), 1)
 }
 
@@ -148,7 +150,7 @@ function isOnlineList (userList) {
       user.lastOnline = ''
     }
   })
-  userList.sort((x,y) => {
+  userList.sort((x, y) => {
     var c = x.isOnline ? 1 : 0
     var d = y.isOnline ? 1 : 0
     return Number(d) - Number(c)
@@ -194,6 +196,7 @@ function getOnlineUsers () {
 
 io.on('connection', function (socket) {
   socket.on('user connected', (data) => {
+    console.log('user is connected')
     users[socket.id] = { id: data.id, name: data.name }
     socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
     io.to(socket.id).emit('s-userList', getOnlineUsers())
@@ -212,15 +215,15 @@ io.on('connection', function (socket) {
       emitEvent(io, [socket.id], 's-currentBusy')
       return false
     }
-    markAsBusy(fromId)
+    markAsBusy(fromId, 'initiateCall from id')
     if (isBusy(toId)) {
-      removeFromBusy(fromId)
+      removeFromBusy(fromId, 'event initiate-call')
       emitEvent(io, [socket.id], 'user busy')
       return false
     }
     // eslint-disable-next-line eqeqeq
     if (!isOnline(toId)) {
-      removeFromBusy(fromId)
+      removeFromBusy(fromId, 'event initiate-call, when not online toId')
       emitEvent(io, [socket.id], 'user offline')
       return false
     }
@@ -228,7 +231,7 @@ io.on('connection', function (socket) {
 
     opentok.createSession(function (err, session) {
       if (err) {
-        removeFromBusy(fromId)
+        removeFromBusy(fromId, 'after session created, opentok error')
         io.to(socket.id).emit('error', 'Cannot generate token')
         return false
       }
@@ -250,14 +253,15 @@ io.on('connection', function (socket) {
       }
       // emitEvent(io, receiverSocketIds, 's-apiTokens', receiverData)
       emitEvent(io, receiverSocketIds, 's-userCalling', receiverData)
-      markAsBusy(toId)
+      markAsBusy(toId, 'initiate call toId')
     })
   })
 
   socket.on('disconnect', function () {
     if (users[socket.id]) {
       socket.broadcast.emit('s-userOffline', users[socket.id].id)
-      removeFromBusy(users[socket.id].id)
+      console.log(users[socket.id])
+      removeFromBusy(users[socket.id].id, 'socket disconnected')
       removeSocket(socket.id)
     }
   })
@@ -265,15 +269,15 @@ io.on('connection', function (socket) {
     console.log(socketId)
     if (socketId) {
       if (socketExists(socketId) && users[socketId]) {
-        removeFromBusy(users[socketId].id)
+        removeFromBusy(users[socketId].id, 'r-userInactive')
       }
-      removeFromBusy(users[socket.id].id)
+      removeFromBusy(users[socket.id].id, 'r-userInactive')
       emitEvent(io, [socketId], 's-userInactive', { userId: users[socket.id].id })
     }
   })
   socket.on('r-callAccepted', (data) => {
-    markAsBusy(users[data])
-    markAsBusy(users[socket.id].id)
+    markAsBusy(users[data].id, 'r-callAccepted')
+    markAsBusy(users[socket.id].id, 'r-callAccepted')
     let socketIds = getSocketIdsFromSocketId(socket.id)
     socketIds.forEach((socketId) => {
       if (socketId != socket.id) {
@@ -286,8 +290,8 @@ io.on('connection', function (socket) {
   socket.on('c-cancelCall', (data) => {
     let socketIds = getSocketIdsFromUserId(data.to)
     emitEvent(io, socketIds, 's-callCancel')
-    removeFromBusy(data.from)
-    removeFromBusy(data.to)
+    removeFromBusy(data.from, 'c-cancelCall')
+    removeFromBusy(data.to, 'c-cancelCall')
   })
 
   socket.on('r-callRejected', (socketId) => {
@@ -299,17 +303,17 @@ io.on('connection', function (socket) {
     })
     emitEvent(io, [socketId], 's-callRejected')
     if (users[socketId]) {
-      removeFromBusy(users[socketId].id)
-      removeFromBusy(users[socket.id].id)
+      removeFromBusy(users[socketId].id, 's-callRejected')
+      removeFromBusy(users[socket.id].id, 's-callRejected')
     }
   })
 
   socket.on('endCall', (data) => {
     console.log('from inside endcall, received from ender' + data)
     console.log('from inside endcall, socket id of user who ended' + users[socket.id].id)
-    removeFromBusy(users[socket.id].id)
+    removeFromBusy(users[socket.id].id, 'endCall who ended the call')
     if (data) {
-      removeFromBusy(users[data].id)
+      removeFromBusy(users[data].id, 'endCall, received from who ended call')
     }
     let socketIds = getSocketIdsFromSocketId(data)
     emitEvent(io, socketIds, 'endCall')
