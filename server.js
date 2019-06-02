@@ -251,8 +251,7 @@ io.on('connection', function (socket) {
         'callFrom': socket.id,
         'name': data.name
       }
-      // emitEvent(io, receiverSocketIds, 's-apiTokens', receiverData)
-      emitEvent(io, receiverSocketIds, 's-userCalling', receiverData)
+      emitEvent(io, [receiverSocketIds[0]], 's-userCalling', receiverData)
       markAsBusy(toId, 'initiate call toId')
     })
   })
@@ -292,6 +291,7 @@ io.on('connection', function (socket) {
     emitEvent(io, socketIds, 's-callCancel')
     removeFromBusy(data.from, 'c-cancelCall')
     removeFromBusy(data.to, 'c-cancelCall')
+    return false
   })
 
   socket.on('r-callRejected', (socketId) => {
