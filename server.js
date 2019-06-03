@@ -16,7 +16,7 @@ var unReadMessage = []
 //   socketId:user
 // ]
 
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3000
 
 // insert new unread message count
 function insertUnreadCount(from, to, count) {
@@ -152,7 +152,6 @@ var merge = function (left, right) {
       result.push(right.shift())
     }
   }
-
   result = result.concat(left, right)
   return result
 }
