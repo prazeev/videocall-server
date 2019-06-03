@@ -67,7 +67,24 @@ function socketExists (socketId) {
   }
   return false
 }
-
+function empty (data) {
+  if (typeof (data) == 'number' || typeof (data) == 'boolean') {
+    return false
+  }
+  if (typeof (data) == 'undefined' || data === null) {
+    return true
+  }
+  if (typeof (data.length) != 'undefined') {
+    return data.length == 0
+  }
+  var count = 0
+  for (var i in data) {
+    if (data.hasOwnProperty(i)) {
+      count++
+    }
+  }
+  return count == 0
+}
 function getSocketIdsFromUserId (userId) {
   let socketIds = []
   Object.entries(users).map((user) => {
@@ -312,7 +329,7 @@ io.on('connection', function (socket) {
     console.log('from inside endcall, received from ender' + data)
     console.log('from inside endcall, socket id of user who ended' + users[socket.id].id)
     removeFromBusy(users[socket.id].id, 'endCall who ended the call')
-    if (data) {
+    if (data && !empty(data)) {
       removeFromBusy(users[data].id, 'endCall, received from who ended call')
     }
     let socketIds = getSocketIdsFromSocketId(data)
