@@ -276,6 +276,14 @@ io.on('connection', function (socket) {
       removeSocket(socket.id)
     }
   })
+  socket.on('r-userLogout', function () {
+    if (users[socket.id]) {
+      socket.broadcast.emit('s-userOffline', users[socket.id].id)
+      console.log(users[socket.id])
+      removeFromBusy(users[socket.id].id, 'socket disconnected')
+    }
+  })
+
   socket.on('r-userInactive', (socketId) => {
     console.log(socketId)
     if (socketId) {
