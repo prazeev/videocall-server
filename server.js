@@ -166,6 +166,13 @@ function isOnlineList (userList) {
       user.lastOnline = ''
     }
   })
+<<<<<<< Updated upstream
+=======
+  userList.sort(function (x, y) {
+    return x.isOnline - y.isOnline
+  })
+  userList.reverse()
+>>>>>>> Stashed changes
   return userList
 }
 
@@ -206,6 +213,7 @@ function getOnlineUsers () {
 }
 
 io.on('connection', function (socket) {
+  console.log('socket connected')
   socket.on('user connected', (data) => {
     console.log('user is connected')
     users[socket.id] = { id: data.id, name: data.name }
