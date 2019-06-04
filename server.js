@@ -16,7 +16,7 @@ var unReadMessage = []
 //   socketId:user
 // ]
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3001
 
 // insert new unread message count
 function insertUnreadCount(from, to, count) {
@@ -134,27 +134,48 @@ function lastChatDate(from, to) {
   }
 }
 
-var sort = function (array) {
-  var len = array.length
-  if (len < 2) {
-    return array
-  }
-  var pivot = Math.ceil(len / 2)
-  return merge(sort(array.slice(0, pivot)), sort(array.slice(pivot)))
-}
+// var sort = function (array) {
+// var sort = function (array) {
+//   var len = array.length
+//   if (len < 2) {
+//     return array
+//   }
+//   var pivot = Math.ceil(len / 2)
+//   return merge(sort(array.slice(0, pivot)), sort(array.slice(pivot)))
+// }
 
-var merge = function (left, right) {
-  var result = []
-  while ((left.length > 0) && (right.length > 0)) {
-    if (left[0].date > right[0]['obj'].date) {
-      result.push(left.shift())
-    } else {
-      result.push(right.shift())
-    }
-  }
-  result = result.concat(left, right)
-  return result
-}
+// var merge = function (left, right) {
+//   var result = []
+//   while ((left.length > 0) && (right.length > 0)) {
+//     if (left[0].date > right[0]['obj'].date) {
+//       result.push(left.shift())
+//     } else {
+//       result.push(right.shift())
+//     }
+//   }
+//   result = result.concat(left, right)
+//   return result
+// }
+//   var len = array.length
+//   if (len < 2) {
+//     return array
+//   }
+//   var pivot = Math.ceil(len / 2)
+//   return merge(sort(array.slice(0, pivot)), sort(array.slice(pivot)))
+// }
+
+// var merge = function (left, right) {
+//   var result = []
+//   while ((left.length > 0) && (right.length > 0)) {
+//     if (left[0].date > right[0]['obj'].date) {
+//       result.push(left.shift())
+//     } else {
+//       result.push(right.shift())
+//     }
+//   }
+//   result = result.concat(left, right)
+//   return result
+// }
 
 function isOnlineList (userList) {
   userList.forEach(function (user) {
@@ -166,13 +187,10 @@ function isOnlineList (userList) {
       user.lastOnline = ''
     }
   })
-<<<<<<< Updated upstream
-=======
   userList.sort(function (x, y) {
     return x.isOnline - y.isOnline
   })
   userList.reverse()
->>>>>>> Stashed changes
   return userList
 }
 
@@ -218,7 +236,7 @@ io.on('connection', function (socket) {
     console.log('user is connected')
     users[socket.id] = { id: data.id, name: data.name }
     socket.broadcast.emit('s-userOnline', { 'id': users[socket.id].id })
-    io.to(socket.id).emit('s-userList', getOnlineUsers())
+    // io.to(socket.id).emit('s-userList', getOnlineUsers())
   })
   socket.on('r-userStatus', (data) => {
     emitEvent(io, [socket.id], 's-userStatus', isOnline(data))
