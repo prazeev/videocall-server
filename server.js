@@ -306,6 +306,7 @@ io.on('connection', function (socket) {
       socket.broadcast.emit('s-userOffline', users[socket.id].id)
       console.log(users[socket.id])
       removeFromBusy(users[socket.id].id, 'socket disconnected')
+      removeSocket(socket.id)
     }
   })
 
