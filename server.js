@@ -166,11 +166,6 @@ function isOnlineList (userList) {
       user.lastOnline = ''
     }
   })
-  userList.sort((x, y) => {
-    var c = x.isOnline ? 1 : 0
-    var d = y.isOnline ? 1 : 0
-    return Number(d) - Number(c)
-  })
   return userList
 }
 
@@ -280,6 +275,14 @@ io.on('connection', function (socket) {
       removeSocket(socket.id)
     }
   })
+  socket.on('r-userLogout', function () {
+    if (users[socket.id]) {
+      socket.broadcast.emit('s-userOffline', users[socket.id].id)
+      console.log(users[socket.id])
+      removeFromBusy(users[socket.id].id, 'socket disconnected')
+    }
+  })
+
   socket.on('r-userInactive', (socketId) => {
     console.log(socketId)
     if (socketId) {
