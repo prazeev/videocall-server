@@ -10,7 +10,7 @@ var opentok = new OpenTok(apiKey, apiSecret)
 var users = {}
 var busyUsers = []
 var messages = []
-var unReadMessage = []
+// var unReadMessage = []
 
 // [
 //   socketId:user
@@ -19,30 +19,30 @@ var unReadMessage = []
 const port = process.env.PORT || 3001
 
 // insert new unread message count
-function insertUnreadCount(from, to, count) {
-  if (unReadMessage[from] === undefined) {
-    unReadMessage[from] = []
-    unReadMessage[from][to] = Number(count)
-  } else if (unReadMessage[from][to] === undefined) {
-    unReadMessage[from][to] = Number(count)
-  } else {
-    unReadMessage[from][to] += Number(count)
-  }
-}
+// function insertUnreadCount(from, to, count) {
+//   if (unReadMessage[from] === undefined) {
+//     unReadMessage[from] = []
+//     unReadMessage[from][to] = Number(count)
+//   } else if (unReadMessage[from][to] === undefined) {
+//     unReadMessage[from][to] = Number(count)
+//   } else {
+//     unReadMessage[from][to] += Number(count)
+//   }
+// }
 
-function clearUnreadCount(of, to) {
-  delete unReadMessage[of][to]
-}
+// function clearUnreadCount(of, to) {
+//   delete unReadMessage[of][to]
+// }
 
-function getUnReadCount(from, to) {
-  if (unReadMessage[from] === undefined) {
-    return 0
-  } else if (unReadMessage[from][to] === undefined) {
-    return 0
-  } else {
-    return unReadMessage[from][to]
-  }
-}
+// function getUnReadCount(from, to) {
+//   if (unReadMessage[from] === undefined) {
+//     return 0
+//   } else if (unReadMessage[from][to] === undefined) {
+//     return 0
+//   } else {
+//     return unReadMessage[from][to]
+//   }
+// }
 
 // Fetchs all socket ids of user (A user may be connected in multiple sockets). Returns an array of SocketIds
 function getSocketIdsFromSocketId (socketId, message) {
@@ -85,6 +85,7 @@ function empty (data) {
   }
   return count == 0
 }
+
 function getSocketIdsFromUserId (userId) {
   let socketIds = []
   Object.entries(users).map((user) => {
@@ -122,17 +123,17 @@ function isOnline (userId) {
   return isOnline > 0
 }
 
-function lastChatDate(from, to) {
-  var data = messages.filter((message) => {
-    return (message.from == from && message.to == to) || (message.from == to && message.to == from)
-  })
-  data = sort(data)
-  if (data > 0) {
-    return data[0].date
-  } else {
-    return 'N'
-  }
-}
+// function lastChatDate(from, to) {
+//   var data = messages.filter((message) => {
+//     return (message.from == from && message.to == to) || (message.from == to && message.to == from)
+//   })
+//   data = sort(data)
+//   if (data > 0) {
+//     return data[0].date
+//   } else {
+//     return 'N'
+//   }
+// }
 
 // var sort = function (array) {
 // var sort = function (array) {
@@ -354,8 +355,10 @@ io.on('connection', function (socket) {
   })
 
   socket.on('endCall', (data) => {
-    console.log('from inside endcall, received from ender' + data)
-    console.log('from inside endcall, socket id of user who ended' + users[socket.id].id)
+    console.log('Data received from endcall')
+    console.log(data)
+    // console.log('from inside endcall, received from ender' + data)
+    // console.log('from inside endcall, socket id of user who ended' + users[socket.id].id)
     removeFromBusy(users[socket.id].id, 'endCall who ended the call')
     if (data && !empty(data) && users[data]) {
       removeFromBusy(users[data].id, 'endCall, received from who ended call')
