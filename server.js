@@ -360,7 +360,9 @@ io.on('connection', function (socket) {
     console.log(data)
     // console.log('from inside endcall, received from ender' + data)
     // console.log('from inside endcall, socket id of user who ended' + users[socket.id].id)
-    removeFromBusy(users[socket.id].id, 'endCall who ended the call')
+    if (users[socket.id] && users[socket.id].id) {
+      removeFromBusy(users[socket.id].id, 'endCall who ended the call')
+    }
     if (data && !empty(data) && users[data]) {
       removeFromBusy(users[data].id, 'endCall, received from who ended call')
     }
